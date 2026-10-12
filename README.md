@@ -1,5 +1,13 @@
 # Weather
 
+Download
+
+<a href="https://github.com/As0d1/WeatherApp/releases/download/v1.0.0/weather-v1.0.0.apk"> <img src="https://img.shields.io/badge/Download-Android%20APK-2EA44F?style=for-the-badge&logo=android&logoColor=white" alt="Download Android APK" /> </a>
+
+Android users can click the button above to download Weather v1.0.0 directly.
+
+Alternatively, visit the Releases page to find the latest version.
+
 A cross-platform weather app for iOS and Android, built with **React Native**, **Expo** and **TypeScript**.
 
 It shows the current weather, the next 24 hours and a 7-day forecast for your location or any city in the world, in **English, Uzbek and Korean**.
