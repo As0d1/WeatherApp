@@ -1,0 +1,59 @@
+name: Release
+
+# Builds an Android APK and publishes it as a GitHub release.
+# Start it by pushing a tag like v1.0.0, or from the Actions tab with "Run workflow".
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release tag, for example v1.0.0'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  android-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test -- --ci
+
+      - name: Generate native Android project
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build release APK
+        working-directory: android
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a --no-daemon
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.version || github.ref_name }}
+        run: |
+          APK="weather-${TAG}.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "$APK"
+          cat > notes.md <<NOTES
+          ## Install on Android
+
+          1. Download **${APK}** below on your Android phone.
+          2. Open it and allow installing from this source if asked.
+
+          This APK is signed with a debug key for demo purposes, so Android may show a warning.
+          To try the app on iPhone, run it with Expo Go (see the README).
+          NOTES
+          gh release create "$TAG" "$APK" --target "$GITHUB_SHA" --title "Weather ${TAG}" --notes-file notes.md --generate-notes
